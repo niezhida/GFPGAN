@@ -12,14 +12,18 @@ from gfpgan import GFPGANer
 def main():
     """Inference demo for GFPGAN (for users).
     """
+    new_model_path='F:/下载预训练模型/'
+    #D:\sf\dev\Python38\lib\site-packages\facexlib\weights\detection_Resnet50_Final.pth
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-i',
         '--input',
         type=str,
-        default='inputs/whole_imgs',
+        #default='inputs/whole_imgs',
+        default='F:/下载预训练模型/test1.jpg',
         help='Input image or folder. Default: inputs/whole_imgs')
-    parser.add_argument('-o', '--output', type=str, default='results', help='Output folder. Default: results')
+    #parser.add_argument('-o', '--output', type=str, default='results', help='Output folder. Default: results')
+    parser.add_argument('-o', '--output', type=str, default='F:/下载预训练模型/test1_new.jpg', help='Output folder. Default: results')
     # we use version to select models, which is more user-friendly
     parser.add_argument(
         '-v', '--version', type=str, default='1.3', help='GFPGAN model version. Option: 1 | 1.2 | 1.3. Default: 1.3')
@@ -98,6 +102,8 @@ def main():
     if not os.path.isfile(model_path):
         model_path = os.path.join('realesrgan/weights', model_name + '.pth')
     if not os.path.isfile(model_path):
+        model_path = os.path.join(new_model_path, model_name + '.pth')
+    if not os.path.isfile(model_path):
         raise ValueError(f'Model {model_name} does not exist.')
 
     restorer = GFPGANer(
@@ -113,7 +119,10 @@ def main():
         img_name = os.path.basename(img_path)
         print(f'Processing {img_name} ...')
         basename, ext = os.path.splitext(img_name)
-        input_img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        #input_img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        # cv2.imread无法读取/保存中文路径下的图片的解决方法
+        data_igp_tp = np.fromfile(img_path, dtype=np.uint8)  # 先用numpy把图片文件存入内存：data，把图片数据看做是纯字节数据
+        input_img = cv2.imdecode(data_igp_tp, cv2.IMREAD_COLOR)  # 从内存数据读入图片
 
         # restore faces and background if necessary
         cropped_faces, restored_faces, restored_img = restorer.enhance(
@@ -123,17 +132,23 @@ def main():
         for idx, (cropped_face, restored_face) in enumerate(zip(cropped_faces, restored_faces)):
             # save cropped face
             save_crop_path = os.path.join(args.output, 'cropped_faces', f'{basename}_{idx:02d}.png')
-            imwrite(cropped_face, save_crop_path)
+            #imwrite(cropped_face, save_crop_path)
+            #cv2.imwrite无法存储带有中文路径图片
+            cv2.imencode(ext, cropped_face)[1].tofile(save_crop_path)
             # save restored face
             if args.suffix is not None:
                 save_face_name = f'{basename}_{idx:02d}_{args.suffix}.png'
             else:
                 save_face_name = f'{basename}_{idx:02d}.png'
             save_restore_path = os.path.join(args.output, 'restored_faces', save_face_name)
-            imwrite(restored_face, save_restore_path)
+            #imwrite(restored_face, save_restore_path)
+            # cv2.imwrite无法存储带有中文路径图片
+            cv2.imencode('.png', restored_face)[1].tofile(save_restore_path)
             # save comparison image
             cmp_img = np.concatenate((cropped_face, restored_face), axis=1)
-            imwrite(cmp_img, os.path.join(args.output, 'cmp', f'{basename}_{idx:02d}.png'))
+            #imwrite(cmp_img, os.path.join(args.output, 'cmp', f'{basename}_{idx:02d}.png'))
+            # cv2.imwrite无法存储带有中文路径图片,需要手动建立cmp目录
+            cv2.imencode('.png', cmp_img)[1].tofile(os.path.join(args.output, 'cmp', f'{basename}_{idx:02d}.png'))
 
         # save restored img
         if restored_img is not None:
@@ -146,7 +161,9 @@ def main():
                 save_restore_path = os.path.join(args.output, 'restored_imgs', f'{basename}_{args.suffix}.{extension}')
             else:
                 save_restore_path = os.path.join(args.output, 'restored_imgs', f'{basename}.{extension}')
-            imwrite(restored_img, save_restore_path)
+            #imwrite(restored_img, save_restore_path)
+            # cv2.imwrite无法存储带有中文路径图片,需要手动建立cmp目录
+            cv2.imencode(ext, restored_img)[1].tofile(save_restore_path)
 
     print(f'Results are in the [{args.output}] folder.')
 

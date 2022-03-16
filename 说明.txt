@@ -1,0 +1,31 @@
+启动文件:inference_gfpgan.py
+
+腾讯老照片修复算法开源，细节到头发丝，3种预训练模型可下载
+
+安装 torch
+pip install torch
+
+#安装 basicsr - https://github.com/xinntao/BasicSR 
+#我们使用 BasicSR 进行训练和推理
+pip install basicsr
+
+#安装facexlib - https://github.com/xinntao/facexlib 
+#我们在facexlib包中使用人脸检测和人脸恢复助手
+点安装facexlib
+
+pip install -r requirements.txt
+python setup.py 开发
+
+#如果你想用Real-ESRGAN增强背景（非人脸）区域，
+#你还需要安装realesrgan包
+pip install realesrgan
+
+论文:https://arxiv.org/abs/2101.04061
+
+下载预训练模型：GFPGANv1.3.pth
+
+如果 GFPGAN 对您的照片/项目有帮助，请帮助⭐这个回购或推荐给你的朋友。谢谢😊 其他推荐项目：
+▶️ Real-ESRGAN：通用图像恢复的实用算法
+▶️ BasicSR：开源图像和视频恢复工具箱
+▶️ facexlib：提供有用的人脸关系函数的集合
+▶️ HandyView : 基于 PyQt5 的图像查看器，便于查看和比较
